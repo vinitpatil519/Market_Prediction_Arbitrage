@@ -1,0 +1,75 @@
+# Full stack on Postgres + Redis.
+#
+#   docker compose up --build
+#
+# Dashboard on http://localhost:3000, API docs on http://localhost:8000/docs.
+# The default feed is the simulator, so no venue credentials are required.
+# For live books set FEED_MODE=live in a .env file next to this one and supply
+# the Kalshi key pair; Polymarket's market websocket is public.
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: arb
+      POSTGRES_PASSWORD: arb
+      POSTGRES_DB: arbitrage
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U arb -d arbitrage"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build:
+      # Repository root, because the backend imports the `engine` package.
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+asyncpg://arb:arb@postgres:5432/arbitrage
+      REDIS_URL: redis://redis:6379/0
+      FEED_MODE: ${FEED_MODE:-simulator}
+      KALSHI_API_KEY_ID: ${KALSHI_API_KEY_ID:-}
+      KALSHI_PRIVATE_KEY_PEM: ${KALSHI_PRIVATE_KEY_PEM:-}
+      CORS_ORIGINS: '["http://localhost:3000","http://127.0.0.1:3000"]'
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        ["CMD-SHELL",
+         "python -c \"import urllib.request;urllib.request.urlopen('http://localhost:8000/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Baked into the bundle at build time, so it must be the URL the
+        # browser uses, not the compose service name.
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  postgres-data:

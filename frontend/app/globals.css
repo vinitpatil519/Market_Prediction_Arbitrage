@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+@theme {
+  --color-terminal-bg: #07090d;
+  --color-terminal-panel: #0d1117;
+  --color-terminal-raised: #141b24;
+  --color-terminal-line: #1e2733;
+  --color-terminal-text: #d7e0ea;
+  --color-terminal-muted: #6b7a8c;
+  --color-terminal-accent: #4cc9f0;
+  --color-terminal-long: #23c552;
+  --color-terminal-short: #f0426b;
+  --color-terminal-warn: #f5a524;
+  --color-polymarket: #7b61ff;
+  --color-kalshi: #00d09c;
+
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+}
+
+html,
+body {
+  background: var(--color-terminal-bg);
+  color: var(--color-terminal-text);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Numbers are read by column, so they must never reflow between updates. */
+.num {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-terminal-line);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-terminal-muted);
+}
+
+@keyframes flash-long {
+  from {
+    background-color: color-mix(in srgb, var(--color-terminal-long) 22%, transparent);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+.flash {
+  animation: flash-long 700ms ease-out;
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.pulse {
+  animation: pulse-dot 1.6s ease-in-out infinite;
+}
