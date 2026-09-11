@@ -5,8 +5,6 @@ Detects same-venue and cross-venue mispricing on binary prediction markets
 slippage, sizes it with risk-adjusted Kelly, and streams the result to a live
 dashboard.
 
-The build spec this implements is in
-[`01_Prediction_Market_Arbitrage_README.md`](01_Prediction_Market_Arbitrage_README.md).
 
 ## Quick start
 
